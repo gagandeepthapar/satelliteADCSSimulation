@@ -13,7 +13,30 @@ More information regarding the 6 different parts can be found below.
 The initial project was developed in MATLAB, however, the project will be completely redeveloped in Python to showcase controls and software development skillsets.
 
 ## **Part 0: Context and Given Data**
-NA
+**Orbital Data:**
+* *h* (angular momentum) *= 53335.2 km^2/s*
+* *e* (eccentricity) *= 0*
+* *Ω* (Right Ascension of Ascending Node) *= 0 deg*
+* *i* (inclination) *= 98.43 deg*
+* *ω* (Argument of Perigee) *= 0 deg*
+* *θ* (True Anomaly) *= 0 deg*
+* *ϵ-LVLH* (Initial Quaternion relating the body to the LVLH frame) *= [0, 0, 0]; η = 1*
+
+**Detumble Phase:**
+* Spacecraft is a square box with *2 meters* on each edge with total mass of *640 kg*
+* Initial Angular Velocity of *[-0.05, 0.03, 0.2] rad/s* relating the body to the ECI frame
+
+**Normal Operations:**
+* Spacecraft bus is a *2 meter* cube with mass of *500 kg*. The center of mass of the spacecraft is located at the geometric center of the bus.
+* A rectangular sensor is attached to the face pointing towards the Earth (+Z-axis) and is *1 meter* long and *0.25 meters* square. The sensor has a mass of *100 kg*.
+* Two solar panels are deployed along the +/- Y-axis and are constrained to rotate about the +/- Y-axis. The solar panels are *3 meters* long (in the Y-axis), *2 meters* wide, and *0.05 meters* thick. Each panel has a mass of *20 kg* and the center of mass is located at the geometric center of the panel. The solar panels do not rotate relative to the spacecraft bus.
+* Assume all spacecraft components have uniform density with centers of mass located at the geometric centers of each component
+* Magnetically, the spacecraft residual magnetic dipole moment can be modeled as pointing in the -Z direction with magnitude *0.5 A-m^2*
+* See the figure below for the spacecraft schematic
+* Because the thrusters are not actually fully-modulated thrusters, the spacecraft will have a residual angular velocity of *[0.001, -0.001, 0.002] rad/s* relating the body to the ECI frame after the detumble phase.
+* During operation the spacecraft is required to point at the target on the ground to within 0.001 degrees 3-sigma using the reaction wheels used in the reaction wheels part.
+
+![Spacecraft Schematic](./OutputFiles/0_SpacecraftModel.png)
 
 ## **Part 1: Mass Properties**
 Determine the mass and inertial properties of the spacecraft for both the detumble and the normal operations phases.
@@ -61,9 +84,9 @@ Consider the simulation epoch to be March 20, 2021. Disregard any variations of 
 * Torque components for atmospheric drag, solar radiation pressure, gravity gradient, and earth magnetic field
 
 ## **Part 5: Reaction Wheel Control**
-Determine the control gains for a full state feedback 3-axis reaction wheel control system. Use the requirements of **Zeta = 0.65** and **t_s = 30 sec**
+Determine the control gains for a full state feedback 3-axis reaction wheel control system. Use the requirements of **ζ = 0.65** and **t_s = 30 sec**
 
-The positions of the 3 reaction wheels are **[1 0 0]**, **[0 1 0]**, and **[0 0 1]**. Each reaction wheel can be modeled as a simple cylinder with **radius** of **0.3 m** and a **height** of **0.02 m**
+The positions of the 3 reaction wheels are **[1, 0, 0]**, **[0, 1, 0]**, and **[0, 0, 1]**. Each reaction wheel can be modeled as a simple cylinder with **radius** of **0.3 m** and a **height** of **0.02 m**
 
 **Outputs:** Plots for...
 * Euler angles and quaternions relating the body to ECI reference frame
