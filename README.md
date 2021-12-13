@@ -13,6 +13,8 @@ More information regarding the 6 different parts can be found below.
 The initial project was developed in MATLAB, however, the project will be completely redeveloped in Python to showcase controls and software development skillsets.
 
 ## **Part 0: Context and Given Data**
+The project will explore modeling and simulation of the various stages of a spacecraft mission, specifically simulating the attitude dynamics from initial spacecraft deployment to operation. In this simulation, the spacecraft is an Earth observing satellite and an attitude determination and control system must be designed using reaction wheels to ensure the spacecraft maintains pointing nadir.
+
 **Orbital Data:**
 * *h* (angular momentum) *= 53335.2 km^2/s*
 * *e* (eccentricity) *= 0*
