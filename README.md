@@ -1,4 +1,4 @@
-# **AERO - 421 Final Project**
+# **AERO - 421 Final Project Redevelopment**
 **Spacecraft Attitude, Dynamics, and Control:** Simulation to determine and control a satellite's attitude in LEO.
 
 ## **Background**
