@@ -1,0 +1,19 @@
+MASS OF SPACECRAFT:
+Total mass of spacecraft (Detumble): 640 kg
+Total mass of spacecraft (Normal): 640 kg
+
+CENTER OF MASS OF SPACECRAFT:
+Satellite center of mass relative to bus center of mass (Detumble): [0, 0, 0] m
+Satellite center of mass relative to bus center of mass (Normal): [0.0, 0.0, 0.234] m
+
+INERTIA MATRIX OF SPACECRAFT:
+Inertia Matrix relative to center of mass (Detumble):
+[[426.66666667   0.           0.        ]
+ [  0.         426.66666667   0.        ]
+ [  0.           0.         426.66666667]] kg*m^2
+Inertia Matrix relative to center of mass (Normal):
+[[None None None]
+ [None None None]
+ [None None None]] kg*m^2
+
+Notice: the Z-axis for the spacecraft is positive in the direction of the sensor
