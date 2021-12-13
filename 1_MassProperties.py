@@ -11,18 +11,18 @@ class Component:
     # xDim/yDim/zDim - [m] length of given dimension
     # delX/delY/delZ - [m] component of vector pointing from bus CM to local CM
 
-    def __init__(self, name, mass, xDim, yDim, zDim, delX, delY, delZ):
+    def __init__(self, name, mass, localCM, vect2CM):
         self.name = name
         self.mass = mass
-        self.xDim = xDim
-        self.yDim = yDim
-        self.zDim = zDim
-        self.delX = delX
-        self.delY = delY
-        self.delZ = delZ
+        self.CM = localCM
+        self.vect2CM = vect2CM
+
+        self.delX = self.vect2CM[0]
+        self.delY = self.vect2CM[1]
+        self.delZ = self.vect2CM[2]
     
     def __repr__(self):
-        return f"{self.name}: {self.mass} kg; {self.xDim} x {self.yDim} x {self.zDim} m"
+        return f"{self.name}: {self.mass} kg; CM: {self.localCM[0]} x {self.localCM[1]} x {self.localCM[2]} m"
     
 class Spacecraft:
     # mass - [kg] total mass of spacecraft
@@ -38,13 +38,9 @@ class Spacecraft:
     CM = np.array([None, None, None])
     Ibar = np.array([[None, None, None], [None, None, None], [None, None, None]])
 
-    def __init__(self, bus, sensor, leftPanel, rightPanel):
-        self.bus = bus
-        self.sensor = sensor
-        self.lPanel = leftPanel
-        self.rPanel = rightPanel
+    def __init__(self, componentList):
 
-        self.components = [self.bus, self.sensor, self.lPanel, self.rPanel]
+        self.components = componentList
         self.setMass() # compute mass at init time
         self.setCM()  # compute CM at init time
         self.setIbar() # compute Inertia matrix at init time
@@ -70,6 +66,25 @@ class Spacecraft:
     
     def setIbar(self):
         return
+    
+    def plotSat(self):
+        fig = plt.figure()
+        ax = plt.axes(projection = '3d')
+        ax.set_xlabel("X [m]")
+        ax.set_ylabel("Y [m]")
+        ax.set_zlabel("Z [m]")
+        ax.set_title("Vectors Pointing from Spacecraft CM to Component CM (Normal Operations)")
+
+        compNames = []
+        for comp in self.components:
+            vect = cmVect(self.CM, comp.vect2CM)
+            plt.plot(vect[0], vect[1], vect[2])
+            compNames.append(comp.name)
+
+        ax.legend(compNames)
+        plt.show()
+
+        return
 
 class detumbleSat:
     # CM - [m] coordinates of center of mass of spacecraft relative to bus CM
@@ -79,18 +94,22 @@ class detumbleSat:
     Ibar = np.array([[None, None, None], [None, None, None], [None, None, None]])
 
 
-    def __init__(self, mass, xDim, yDim, zDim, wX, wY, wZ):
+    def __init__(self, mass, dimensions, vect2CM, angularVelocity):
         # mass - [kg] total mass of spacecraft
         # xDim/yDim/zDim - [m] length of given dimension
         # wX/wY/wZ - [rad/s] initial rotation of spacecraft during detumble
 
         self.mass = mass
-        self.xDim = xDim
-        self.yDim = yDim
-        self.zDim = zDim
-        self.wX = wX
-        self.wY = wY
-        self.wZ = wZ
+        self.dims = dimensions
+        self.CM = vect2CM
+        self.angVel = angularVelocity
+
+        self.wX = self.angVel[0]
+        self.wY = self.angVel[1]
+        self.wZ = self.angVel[2]
+        self.xDim = self.dims[0]
+        self.yDim = self.dims[1]
+        self.zDim = self.dims[2]
 
         self.setIbar()
     
@@ -109,31 +128,50 @@ class detumbleSat:
 
         return self.Ibar
 
+def cmVect(CM, localCM):
+    x = np.array([CM[0],localCM[0] - CM[0]])
+    y = np.array([CM[1],localCM[1] - CM[1]])
+    z = np.array([CM[2],localCM[2] - CM[2]])
+    return [x, y, z]
+
 def main():
     # initialization
 
     # components
-    bus = Component("BUS", 500, 2, 2, 2, 0, 0, 0)
-    sensor = Component("SENSOR", 100, 0.25, 0.25, 1, 0, 0, 1.5)
-    lPanel = Component("LEFTPANEL", 20, 2, 3, 0.05, 0, -2.5, 0)
-    rPanel = Component("RIGHTPANEL", 20, 2, 3, 0.05, 0, 2.5, 0)
+    bus = Component("BUS", 500, np.array([2, 2, 2]), np.array([0, 0, 0]))
+    sensor = Component("SENSOR", 100, np.array([0.25, 0.25, 1]), np.array([0, 0, 1.5]))
+    lPanel = Component("LEFT PANEL", 20, np.array([2, 3, 0.05]), np.array([0, -2.5, 0]))
+    rPanel = Component("RIGHT PANEL", 20, np.array([2, 3, 0.05]), np.array([0, 2.5, 0]))
+    componentList = [bus, sensor, lPanel, rPanel]
 
     # sat during detumble phase
-    detSAT = detumbleSat(640, 2, 2, 2, -0.05, 0.03, 0.2)
+    detSAT = detumbleSat(640, np.array([2, 2, 2]), np.array([0, 0, 0]), np.array([-0.05, 0.03, 0.2]))
 
     # sat during normal operations
-    normalSAT = Spacecraft(bus, sensor, lPanel, rPanel)
+    normalSAT = Spacecraft(componentList)
 
     # Outputs
-    print(f"Total mass of spacecraft (Detumble): {detSAT.mass} kg")
-    print(f"Total mass of spacecraft (Normal): {normalSAT.mass} kg\n")
+    outFile = open("OutputFiles/1_MassPropertiesOutput.txt", "a")
+    outFile.truncate(0)
+    print(f"MASS OF SPACECRAFT:", file = outFile)
+    print(f"Total mass of spacecraft (Detumble): {detSAT.mass} kg", file = outFile)
+    print(f"Total mass of spacecraft (Normal): {normalSAT.mass} kg\n", file = outFile)
     
-    print(f"Satellite center of mass relative to bus center of mass (Detumble): [{detSAT.CM[0]}, {detSAT.CM[1]}, {detSAT.CM[2]}] m")
-    print(f"Satellite center of mass relative to bus center of mass (Normal): [{normalSAT.CM[0]}, {normalSAT.CM[1]}, {normalSAT.CM[2]:.3}] m\n")
+    print(f"CENTER OF MASS OF SPACECRAFT:", file = outFile)
+    print(f"Satellite center of mass relative to bus center of mass (Detumble): [{detSAT.CM[0]}, {detSAT.CM[1]}, {detSAT.CM[2]}] m", file = outFile)
+    print(f"Satellite center of mass relative to bus center of mass (Normal): [{normalSAT.CM[0]}, {normalSAT.CM[1]}, {normalSAT.CM[2]:.3}] m\n", file = outFile)
 
-    print(f"Inertia Matrix relative to center of mass (Detumble):\n{detSAT.Ibar} kg*m^2")
-    print(f"Inertia Matrix relative to center of mass (Normal):\n{normalSAT.Ibar} kg*m^2")
+    print(f"INERTIA MATRIX OF SPACECRAFT:", file = outFile)
+    print(f"Inertia Matrix relative to center of mass (Detumble):\n{detSAT.Ibar} kg*m^2", file = outFile)
+    print(f"Inertia Matrix relative to center of mass (Normal):\n{normalSAT.Ibar} kg*m^2", file = outFile)
+
+    print(f"\nNotice: the Z-axis for the spacecraft is positive in the direction of the sensor", file = outFile)
+
+    normalSAT.plotSat()
+
     return
 
 if __name__ == "__main__":
+    # main()
+    # plotSat()
     main()
