@@ -8,21 +8,38 @@ from matplotlib import pyplot as plt
 class Component:
     # name - name of component
     # mass - [kg] mass of component
-    # xDim/yDim/zDim - [m] length of given dimension
-    # delX/delY/delZ - [m] component of vector pointing from bus CM to local CM
+    # dimensions - [m] length of given dimension
+    # vect2cm - [m] vector from coordinate axes origin to local CM
 
-    def __init__(self, name, mass, localCM, vect2CM):
+    # initialize inertia tensor [kg*m^2]
+    Ibar = np.array([0]*9).reshape(3,3)
+
+    def __init__(self, name, mass, dimensions, vect2CM):
         self.name = name
         self.mass = mass
-        self.CM = localCM
+        self.dims = dimensions
         self.vect2CM = vect2CM
+
+        self.xDim = self.dims[0]
+        self.yDim = self.dims[1]
+        self.zDim = self.dims[2]
 
         self.delX = self.vect2CM[0]
         self.delY = self.vect2CM[1]
         self.delZ = self.vect2CM[2]
+
+        self.setIbar()
     
     def __repr__(self):
         return f"{self.name}: {self.mass} kg; CM: {self.localCM[0]} x {self.localCM[1]} x {self.localCM[2]} m"
+    
+    def setIbar(self):
+        const = self.mass/12 # coefficient for prism inertia tensors
+        Ix = const * (self.yDim ** 2 + self.zDim ** 2)
+        Iy = const * (self.xDim ** 2 + self.zDim ** 2)
+        Iz = const * (self.xDim ** 2 + self.yDim ** 2)
+
+        self.Ibar = np.array([Ix, 0, 0, 0, Iy, 0, 0, 0, Iz]).reshape(3,3)
     
 class Spacecraft:
     # mass - [kg] total mass of spacecraft
@@ -34,25 +51,23 @@ class Spacecraft:
     # lPanel - spacecraft left solar panel
     # rPanel - spacecraft right solar panel
 
-    mass = None;
-    CM = np.array([None, None, None])
-    Ibar = np.array([[None, None, None], [None, None, None], [None, None, None]])
+    mass = 0;
+    CM = np.array([0]*3)
+    Jbar = np.array([0]*9).reshape(3,3)
 
     def __init__(self, componentList):
 
         self.components = componentList
         self.setMass() # compute mass at init time
         self.setCM()  # compute CM at init time
-        self.setIbar() # compute Inertia matrix at init time
+        self.setJbar() # compute Inertia matrix at init time
 
     def __repr__(self):
         return f"Mass: {self.mass()} kg; CM: {self.CMs()} m"
     
     def setMass(self):
-        mass = 0
         for comp in self.components:
-            mass += comp.mass
-        self.mass = mass
+            self.mass += comp.mass
         return self.mass
 
     def setCM(self):
@@ -64,9 +79,21 @@ class Spacecraft:
         self.CM = np.array([CMx, CMy, CMz])
         return self.CM
     
-    def setIbar(self):
-        return
-    
+    def setJbar(self):
+        for comp in self.components:
+            # calculate vector between CMs
+            delX = comp.vect2CM[0] - self.CM[0]
+            delY = comp.vect2CM[1] - self.CM[1]
+            delZ = comp.vect2CM[2] - self.CM[2]
+
+            rad2CM = np.array([delX, delY, delZ])
+            parallelMatrix = np.matmul(parallelAxisRad(rad2CM), parallelAxisRad(rad2CM))
+
+            # incrememnt system inertia sensor
+            offsetIbar = comp.Ibar - (comp.mass * parallelMatrix)
+            self.Jbar = self.Jbar + offsetIbar
+        return self.Jbar
+
     def plotSat(self):
         fig = plt.figure()
         ax = plt.axes(projection = '3d')
@@ -91,7 +118,7 @@ class detumbleSat:
     # Ibar - [kg*m^2] Inertia matrix of spacecraft relative to spacecraft CM
 
     CM = np.array([0,0,0]) # setting geo center to CM
-    Ibar = np.array([[None, None, None], [None, None, None], [None, None, None]])
+    Ibar = np.array([None]*9).reshape(3,3)
 
 
     def __init__(self, mass, dimensions, vect2CM, angularVelocity):
@@ -134,14 +161,43 @@ def cmVect(CM, localCM):
     z = np.array([CM[2],localCM[2] - CM[2]])
     return [x, y, z]
 
+def parallelAxisRad(vector):
+    x = vector[0]
+    y = vector[1]
+    z = vector[2]
+
+    rad = np.array([0, -z, y, z, 0, -x, -y, x, 0]).reshape(3,3)
+    return rad
+
 def main():
-    # initialization
+    # initialization of components
+    # given values:
+    
+    # bus
+    busMass = 500
+    busDims = np.array([2,2,2])
+    busCMtoOrig = np.array([0,0,0])
+    bus = Component("BUS", busMass, busDims, busCMtoOrig)
+
+    # sensor
+    sensorMass = 100
+    sensorDims = np.array([0.25, 0.25, 1])
+    sensorCMtoOrig = np.array([0, 0, 1.5])
+    sensor = Component("SENSOR", sensorMass, sensorDims, sensorCMtoOrig)
+
+    # panels
+    panelMass = 20
+    panelDims = np.array([2, 3, 0.05])
+
+    # left panel
+    lPanelCMtoOrig = np.array([0, -2.5, 0])
+    lPanel = Component("LEFT PANEL", panelMass, panelDims, lPanelCMtoOrig)
+
+    # right panel
+    rPanelCMtoOrig = np.array([0, 2.5, 0])
+    rPanel = Component("RIGHT PANEL", panelMass, panelDims, rPanelCMtoOrig)
 
     # components
-    bus = Component("BUS", 500, np.array([2, 2, 2]), np.array([0, 0, 0]))
-    sensor = Component("SENSOR", 100, np.array([0.25, 0.25, 1]), np.array([0, 0, 1.5]))
-    lPanel = Component("LEFT PANEL", 20, np.array([2, 3, 0.05]), np.array([0, -2.5, 0]))
-    rPanel = Component("RIGHT PANEL", 20, np.array([2, 3, 0.05]), np.array([0, 2.5, 0]))
     componentList = [bus, sensor, lPanel, rPanel]
 
     # sat during detumble phase
@@ -163,7 +219,7 @@ def main():
 
     print(f"INERTIA MATRIX OF SPACECRAFT:", file = outFile)
     print(f"Inertia Matrix relative to center of mass (Detumble):\n{detSAT.Ibar} kg*m^2", file = outFile)
-    print(f"Inertia Matrix relative to center of mass (Normal):\n{normalSAT.Ibar} kg*m^2", file = outFile)
+    print(f"Inertia Matrix relative to center of mass (Normal):\n{normalSAT.Jbar} kg*m^2", file = outFile)
 
     print(f"\nNotice: the Z-axis for the spacecraft is positive in the direction of the sensor", file = outFile)
 
@@ -172,6 +228,4 @@ def main():
     return
 
 if __name__ == "__main__":
-    # main()
-    # plotSat()
     main()
