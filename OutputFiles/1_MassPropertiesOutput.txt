@@ -12,8 +12,8 @@ Inertia Matrix relative to center of mass (Detumble):
  [  0.         426.66666667   0.        ]
  [  0.           0.         426.66666667]] kg*m^2
 Inertia Matrix relative to center of mass (Normal):
-[[None None None]
- [None None None]
- [None None None]] kg*m^2
+[[812.03958333   0.           0.        ]
+ [  0.         545.37291667   0.        ]
+ [  0.           0.         627.70833333]] kg*m^2
 
 Notice: the Z-axis for the spacecraft is positive in the direction of the sensor
