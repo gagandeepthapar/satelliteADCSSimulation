@@ -4,7 +4,7 @@
 ## **Background**
 AERO-421, or Spacecraft Attitude, Dynamics, and Controls, is a class taught at the California Polytechnic State University at San Luis Obispo (Cal Poly SLO) which serves as an...
 
-> "Introduction to spacecraft attitude dynamics and control... [and] fundamentals of guidance and navigation systems... [with emphasis in] analysis and design of control systems for aerospace vehicles." - Cal Poly Aerospace Engineering Course Catalog
+> *"Introduction to spacecraft attitude dynamics and control... [and] fundamentals of guidance and navigation systems... [with emphasis in] analysis and design of control systems for aerospace vehicles." - Cal Poly Aerospace Engineering Course Catalog*
 
 The final project in the course was to develop a simulation to determine a satellite's attitude in Low Earth Orbit (LEO), consider and model detumbling from a launch vehicle, consider and model disturbances due to external forces i.e., Solar Radiation Pressure (SRP), and to consider and model control via onboard reaction wheels. 
 
