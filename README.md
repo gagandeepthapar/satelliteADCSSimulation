@@ -12,6 +12,8 @@ More information regarding the 6 different parts can be found below.
 
 The initial project was developed in MATLAB, however, the project will be completely redeveloped in Python to showcase controls and software development skillsets.
 
+<details><summary>Part 0: Context and Given Data</summary>
+
 ## **Part 0: Context and Given Data**
 The project will explore modeling and simulation of the various stages of a spacecraft mission, specifically simulating the attitude dynamics from initial spacecraft deployment to operation. In this simulation, the spacecraft is an Earth observing satellite and an attitude determination and control system must be designed using reaction wheels to ensure the spacecraft maintains pointing nadir.
 
@@ -40,6 +42,10 @@ The project will explore modeling and simulation of the various stages of a spac
 
 ![Spacecraft Schematic](./OutputFiles/0_SpacecraftModel.png)
 
+</details>
+
+<details><summary>Part 1: Mass Properties</summary>
+
 ## **Part 1: Mass Properties**
 Determine the mass and inertial properties of the spacecraft for both the detumble and the normal operations phases.
 
@@ -47,6 +53,10 @@ Determine the mass and inertial properties of the spacecraft for both the detumb
 * Total mass of the spacecraft
 * Center of mass relative to the spacecraft bus center of mass. The body frame will be located at the center of mass of the whole spacecraft
 * Intertia matrix of the whole spacecraft about the center of mass of the spacecraft
+
+</details>
+
+<details><summary>Part 2: Torque Free Motion</summary>
 
 ## **Part 2: Torque Free Motion**
 Model the torque free orbital and attitude motion of the spacecraft
@@ -56,6 +66,10 @@ Plots for...
 * Euler angles and quaternions relating body to ECI reference frames
 * Angular velocity of the spacecraft in body components for one orbit of the normal operations phase
 
+</details>
+
+<details><summary>Part 3: Detumble</summary>
+
 ## **Part 3: Detumble**
 Simulate the motion of the satellite during the detumble phase. Assume fully modulated thrusters and use direct velocity feedback
 
@@ -64,6 +78,10 @@ Plots for...
 * Euler angles and quaternions relating body to ECI reference frames
 * Angular velocity of the spacecraft in body components for the detumble phase
 * Torque components in the body frame
+
+</details>
+
+<details><summary>Part 4: Disturbance Simulation</summary>
 
 ## **Part 4: Disturbance Simulation**
 Add the four disturbance models to the simulation:
@@ -85,6 +103,10 @@ Consider the simulation epoch to be March 20, 2021. Disregard any variations of 
 * Angular velocity of the spacecraft relative to the LVLH frame expressed in body components
 * Torque components for atmospheric drag, solar radiation pressure, gravity gradient, and earth magnetic field
 
+</details>
+
+<details><summary>Part 5: Reaction Wheel Control</summary>
+
 ## **Part 5: Reaction Wheel Control**
 Determine the control gains for a full state feedback 3-axis reaction wheel control system. Use the requirements of **ζ = 0.65** and **t_s = 30 sec**
 
@@ -98,9 +120,15 @@ The positions of the 3 reaction wheels are **[1, 0, 0]**, **[0, 1, 0]**, and **[
 * Commanded moment from the determined control law
 * Wheel speed of each reaction wheel
 
+</details>
+
+<details><summary>Part 6: Visualization</summary>
+
 ## **Part 6: Visualization**
 Determine and animate the quanterions of the spacecraft, from ECI to body frame, for the duration of 1-5 revolutions. 
 
 **Output**:
 * Table of quaternion and time data
 * Video or other animation file to show the revolution of the spacecraft
+
+</details>
