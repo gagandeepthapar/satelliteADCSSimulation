@@ -30,6 +30,9 @@ class Orbit:
 
             self.R, self.V = coes2RV(self.h, self.ecc, self.inc, self.raan, self.arg, self.ta)
         
+        a = -centralBody.mu/(np.linalg.norm([self.V])**2 - (2*centralBody.mu/np.linalg.norm([self.R]))) # equation for semi-major axis
+        self.period = 2*np.pi*(a**1.5)/(np.sqrt(centralBody.mu)) # equation for period of orbit
+
         self.body = centralBody
         self.createPath()
     
@@ -290,6 +293,48 @@ def matr2quat(matr):
     e3 = (matr[0][1] - matr[1][0])/(4*n)
 
     return quaternion(np.array([e1, e2, e3]), n)
+
+def quatProgressionSol(quaternion, angularVelocity, inertiaVector, period):
+    def quatProgression(t, state):
+        ix = inertiaVector[0]
+        iy = inertiaVector[1]
+        iz = inertiaVector[2]
+
+        e1 = state[0]
+        e2 = state[1]
+        e3 = state[2]
+        n = state[3]
+        wx = state[4]
+        wy = state[5]
+        wz = state[6]
+
+        e1Dot = ((n*wx) - (e3*wy) + (e2*wz))/2
+        e2Dot = ((e3*wx) + (n*wy) - (e1*wz))/2
+        e3Dot = ((-e2*wx) + (e1*wy) + (n*wz))/2
+
+        E = np.array([e1, e2, e3])
+        W = np.array([wx, wy, wz])
+        nDot = np.matmul(E, np.transpose(W)) * -0.5
+
+        wxDot = (iy-iz)*wy*wz/ix
+        wyDot = (iz-ix)*wx*wz/iy
+        wzDot = (ix-iy)*wx*wy/iz
+
+        dState = np.array([e1Dot, e2Dot, e3Dot, nDot, wxDot, wyDot, wzDot])
+
+        return dState
+
+    e1 = quaternion.E[0]
+    e2 = quaternion.E[1]
+    e3 = quaternion.E[2]
+    n = quaternion.n
+    wX = angularVelocity[0][0]
+    wY = angularVelocity[1][0]
+    wZ = angularVelocity[2][0]
+
+    state = np.array([e1, e2, e3, n, wX, wY, wZ])
+
+    return solve_ivp(quatProgression, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
 if __name__ == '__main__':
     R = np.array([7136.6, 0, 0])
