@@ -46,6 +46,7 @@ def main():
     eulerSol = eulerAngleSol(initialEuler, angVel_ECI, scIbar, scOrbit.period)
 
         # ANGULAR VELOCITY
+    angVelSol = angVelProgressionSol(angVel_ECI, scIbar, scOrbit.period)
 
         # extract data to plot            
             # angle data
@@ -62,9 +63,10 @@ def main():
     n_prog = quatSol.y[3]
 
             # angular velocity data
-
-            
-
+    angVel_time_prog = angVelSol.t
+    wx_prog = angVelSol.y[0]
+    wy_prog = angVelSol.y[1]
+    wz_prog = angVelSol.y[2]
 
         # plot figures
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharey = False, sharex = True)
@@ -89,6 +91,10 @@ def main():
     ax2.grid(True)
 
             # angular velocity
+    ax3.plot(angVel_time_prog, wx_prog, label = 'wX')
+    ax3.plot(angVel_time_prog, wy_prog, label = 'wY')
+    ax3.plot(angVel_time_prog, wz_prog, label = 'wZ')
+    ax3.legend(loc = 'upper right')
     ax3.set_xlabel("Time [s]")
     ax3.set_ylabel("Angular Velocity [rad/s]")
     ax3.grid(True)
