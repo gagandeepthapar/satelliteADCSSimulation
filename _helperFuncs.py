@@ -336,6 +336,52 @@ def quatProgressionSol(quaternion, angularVelocity, inertiaVector, period):
 
     return solve_ivp(quatProgression, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
+def eulerAngleSol(initialEuler, angularVelocity, inertiaVector, period):
+    def eulerAngle(t, state):
+        ix = inertiaVector[0]
+        iy = inertiaVector[1]
+        iz = inertiaVector[2]
+
+        phi = state[0]
+        theta = state[1]
+        psi = state[2]
+        wx = state[3]
+        wy = state[4]
+        wz = state[5]
+
+        cos = np.cos
+        sin = np.sin
+
+        angVelVec = np.transpose(np.array([wx, wy, wz]))
+
+        phiMatr = np.array([cos(theta), sin(phi) * sin(theta), cos(phi) * sin(theta)])
+        phiDot = (1/cos(theta)) * np.matmul(phiMatr, angVelVec)
+
+        thetaMatr = np.array([0, cos(phi)*cos(theta), -sin(phi)*cos(theta)])
+        thetaDot = (1/cos(theta)) * np.matmul(thetaMatr, angVelVec)
+
+        psiMatr = np.array([0, sin(phi), cos(phi)])
+        psiDot = (1/cos(theta)) * np.matmul(psiMatr, angVelVec)
+
+        wxDot = (iy-iz)*wy*wz/ix
+        wyDot = (iz-ix)*wx*wz/iy
+        wzDot = (ix-iy)*wx*wy/iz
+
+        dState = np.array([phiDot, thetaDot, psiDot, wxDot, wyDot, wzDot])
+        
+        return dState
+
+    phi = initialEuler[0]
+    theta = initialEuler[1]
+    psi = initialEuler[2]
+    wx = angularVelocity[0][0]
+    wy = angularVelocity[1][0]
+    wz = angularVelocity[2][0]
+
+    state = np.array([phi, theta, psi, wx, wy, wz])
+
+    return solve_ivp(eulerAngle, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
+
 if __name__ == '__main__':
     R = np.array([7136.6, 0, 0])
     V = np.array([0, -1.0956, 7.3927])
