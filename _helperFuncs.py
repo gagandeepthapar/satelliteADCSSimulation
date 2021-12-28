@@ -409,6 +409,75 @@ def angVelProgressionSol(initialVelocity, inertiaVector, period):
 
     return solve_ivp(angVelProgression, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
+def torqueFreeSol(initial_quaternion, initial_euler_angles, initial_angular_velocity, inertiaVector, period):
+    def torqueFree(t, state):
+        ix = inertiaVector[0]
+        iy = inertiaVector[1]
+        iz = inertiaVector[2]
+
+        e1 = state[0]
+        e2 = state[1]
+        e3 = state[2]
+        n = state[3]
+
+        phi = state[4]
+        theta = state[5]
+        psi = state[6]
+
+        wx = state[7]
+        wy = state[8]
+        wz = state[9]
+
+        # QUATERNION
+        e1Dot = ((n*wx) - (e3*wy) + (e2*wz))/2
+        e2Dot = ((e3*wx) + (n*wy) - (e1*wz))/2
+        e3Dot = ((-e2*wx) + (e1*wy) + (n*wz))/2
+
+        E = np.array([e1, e2, e3])
+        W = np.array([wx, wy, wz])
+        nDot = np.matmul(E, np.transpose(W)) * -0.5
+
+        # EULER ANGLES
+        cos = np.cos
+        sin = np.sin
+
+        angVelVec = np.transpose(np.array([wx, wy, wz]))
+
+        phiMatr = np.array([cos(theta), sin(phi) * sin(theta), cos(phi) * sin(theta)])
+        phiDot = (1/cos(theta)) * np.matmul(phiMatr, angVelVec)
+
+        thetaMatr = np.array([0, cos(phi)*cos(theta), -sin(phi)*cos(theta)])
+        thetaDot = (1/cos(theta)) * np.matmul(thetaMatr, angVelVec)
+
+        psiMatr = np.array([0, sin(phi), cos(phi)])
+        psiDot = (1/cos(theta)) * np.matmul(psiMatr, angVelVec)
+
+        # ANGULAR VELOCITY
+        wxDot = (iy-iz)*wy*wz/ix
+        wyDot = (iz-ix)*wx*wz/iy
+        wzDot = (ix-iy)*wx*wy/iz
+
+        dState = np.array([e1Dot, e2Dot, e3Dot, nDot, phiDot, thetaDot, psiDot, wxDot, wyDot, wzDot])
+
+        return dState
+
+    e1 = initial_quaternion.E[0]
+    e2 = initial_quaternion.E[1]
+    e3 = initial_quaternion.E[2]
+    n = initial_quaternion.n
+
+    phi = initial_euler_angles[0]
+    theta = initial_euler_angles[1]
+    psi = initial_euler_angles[2]
+
+    wx = initial_angular_velocity[0][0]
+    wy = initial_angular_velocity[1][0]
+    wz = initial_angular_velocity[2][0]
+
+    state = np.array([e1, e2, e3, n, phi, theta, psi, wx, wy, wz])
+
+    return solve_ivp(torqueFree, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
+
 if __name__ == '__main__':
     R = np.array([7136.6, 0, 0])
     V = np.array([0, -1.0956, 7.3927])
