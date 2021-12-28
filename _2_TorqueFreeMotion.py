@@ -76,19 +76,21 @@ def main():
     ax1.plot(angVel_time_prog, theta_prog, label = 'Theta')
     ax1.plot(angVel_time_prog, psi_prog, label = 'Psi')
     ax1.legend(loc = 'upper right')
-    ax1.set_xlabel("Time [s]")
-    ax1.set_ylabel("Angle [deg]")
+    # ax1.set_xlabel("Time [s]")
+    ax1.set_ylabel("Angle [rad]")
     ax1.grid(True)
+    ax1.set_title("Euler Angle")
 
             # quaternions
     ax2.plot(quat_time_prog, e1_prog, label = 'q1')
     ax2.plot(quat_time_prog, e2_prog, label = "q2")
     ax2.plot(quat_time_prog, e3_prog, label = "q3")
     ax2.plot(quat_time_prog, n_prog, label = 'n')
-    ax2.set_xlabel("Time [s]")
+    # ax2.set_xlabel("Time [s]")
     ax2.set_ylabel("Quaternion Parameter")
     ax2.legend(loc = 'upper right')
     ax2.grid(True)
+    ax2.set_title("Quaternion Parameters")
 
             # angular velocity
     ax3.plot(angVel_time_prog, wx_prog, label = 'wX')
@@ -98,6 +100,52 @@ def main():
     ax3.set_xlabel("Time [s]")
     ax3.set_ylabel("Angular Velocity [rad/s]")
     ax3.grid(True)
+    ax3.set_title("Angular Velocity")
+
+    # ALTERNATIVE METHOD: SINGLE ODE
+    torqueFreeProg = torqueFreeSol(initialQuat_ECI, initialEuler, angVel_ECI, scIbar, scOrbit.period)
+
+    time = torqueFreeProg.t
+    e1Dot = torqueFreeProg.y[0]
+    e2Dot = torqueFreeProg.y[1]
+    e3Dot = torqueFreeProg.y[2]
+    nDot = torqueFreeProg.y[3]
+    phiDot = torqueFreeProg.y[4]
+    thetaDot = torqueFreeProg.y[5]
+    psiDot = torqueFreeProg.y[6]
+    wxDot = torqueFreeProg.y[7]
+    wyDot = torqueFreeProg.y[8]
+    wzDot = torqueFreeProg.y[9]
+
+    f, (ax4, ax5, ax6) = plt.subplots(3,1, sharey = False, sharex = True)
+
+    ax5.plot(time, e1Dot, label = 'q1')
+    ax5.plot(time, e2Dot, label = 'q2')
+    ax5.plot(time, e3Dot, label = 'q3')
+    ax5.plot(time, nDot, label = 'n')
+    ax5.legend(loc = 'upper right')
+    ax5.grid(True)
+    ax5.set_xlabel("Time [sec]")
+    ax5.set_ylabel("Quaternion Parameters")
+    ax5.set_title("Quaternion Parameters")
+
+    ax4.plot(time, phiDot, label = 'Phi')
+    ax4.plot(time, thetaDot, label = 'Theta')
+    ax4.plot(time, psiDot, label = 'Psi')
+    ax4.legend(loc = 'upper right')
+    ax4.grid(True)
+    ax4.set_xlabel("Time [sec]")
+    ax4.set_ylabel("Angle [rad]")
+    ax4.set_title("Euler Angle")
+    
+    ax6.plot(time, wxDot, label = 'wX')
+    ax6.plot(time, wyDot, label = 'wY')
+    ax6.plot(time, wzDot, label = 'wZ')
+    ax6.legend(loc = 'upper right')
+    ax6.grid(True)
+    ax6.set_xlabel("Time [sec]")
+    ax6.set_ylabel("Angular Velocity [rad/s]")
+    ax6.set_title("Angular Velocity")
 
     plt.show()
 
