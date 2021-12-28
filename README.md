@@ -63,8 +63,10 @@ Model the torque free orbital and attitude motion of the spacecraft
 
 **Outputs:**
 Plots for...
-* Euler angles and quaternions relating body to ECI reference frames
-* Angular velocity of the spacecraft in body components for one orbit of the normal operations phase
+* Euler angles relating body to ECI reference frames...
+* Quaternions relating body to ECI reference frames...
+* Angular velocity relating body to ECI reference frames...</br>
+for one period of the orbit
 
 </details>
 
