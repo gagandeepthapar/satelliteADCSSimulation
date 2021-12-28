@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import solve
 from scipy.integrate import solve_ivp
 from matplotlib import pyplot as plt
 
@@ -381,6 +382,32 @@ def eulerAngleSol(initialEuler, angularVelocity, inertiaVector, period):
     state = np.array([phi, theta, psi, wx, wy, wz])
 
     return solve_ivp(eulerAngle, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
+
+def angVelProgressionSol(initialVelocity, inertiaVector, period):
+    def angVelProgression(t, state):
+        ix = inertiaVector[0]
+        iy = inertiaVector[1]
+        iz = inertiaVector[2]
+
+        wx = state[0]
+        wy = state[1]
+        wz = state[2]
+
+        wxDot = (iy-iz)*wy*wz/ix
+        wyDot = (iz-ix)*wx*wz/iy
+        wzDot = (ix-iy)*wx*wy/iz
+
+        dState = np.array([wxDot, wyDot, wzDot])
+
+        return dState
+
+    wx = initialVelocity[0][0]
+    wy = initialVelocity[1][0]
+    wz = initialVelocity[2][0]
+
+    state = np.array([wx, wy, wz])
+
+    return solve_ivp(angVelProgression, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
 if __name__ == '__main__':
     R = np.array([7136.6, 0, 0])
