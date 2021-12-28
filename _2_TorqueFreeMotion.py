@@ -23,18 +23,37 @@ def main():
     
 
     # computations:
-        # body to eci frame
+        # QUATERNION
+            # body to eci frame
     lvlh_eci_frame = lvlh2eci(rInitial, vInitial)
     body_lvlh_frame = quat2matr(quatInitial)
     body_eci_frame = np.matmul(body_lvlh_frame, lvlh_eci_frame)
 
-        # initial quaternion in ECI frame
+            # initial quaternion in ECI frame
     initialQuat_ECI = matr2quat(body_eci_frame)
 
-        # progression of quaternion across the period
+            # progression of quaternion across the period
     quatSol = quatProgressionSol(initialQuat_ECI, angVel_ECI, scIbar, scOrbit.period)
 
-        # extract data to plot
+        # EULER ANGLES
+            # initial euler angles
+    phi = np.arctan2(body_eci_frame[1][2],body_eci_frame[2][2])
+    theta = -np.arcsin(body_eci_frame[0][2])
+    psi = np.arctan2(body_eci_frame[0][1],body_eci_frame[0][0])
+
+            # progresion of euler angles across the period
+    initialEuler = np.array([phi, theta, psi])
+    eulerSol = eulerAngleSol(initialEuler, angVel_ECI, scIbar, scOrbit.period)
+
+        # ANGULAR VELOCITY
+
+        # extract data to plot            
+            # angle data
+    angVel_time_prog = eulerSol.t
+    phi_prog = eulerSol.y[0]
+    theta_prog = eulerSol.y[1]
+    psi_prog = eulerSol.y[2]
+
             # quaternion data
     quat_time_prog = quatSol.t
     e1_prog = quatSol.y[0]
@@ -44,28 +63,34 @@ def main():
 
             # angular velocity data
 
-            # angle data
             
-        # plot figures
-            # quaternions
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharey = False, sharex = True)
-    ax1.plot(quat_time_prog, e1_prog, label = 'q1')
-    ax1.plot(quat_time_prog, e2_prog, label = "q2")
-    ax1.plot(quat_time_prog, e3_prog, label = "q3")
-    ax1.plot(quat_time_prog, n_prog, label = 'n')
-    ax1.set_xlabel("Time [s]")
-    ax1.set_ylabel("Quaternion Parameter")
-    ax1.legend()
-    ax1.grid(True)
 
-            # angular velocity
-    ax2.set_xlabel("Time [s]")
-    ax2.set_ylabel("Angular Velocity [rad/s]")
-    ax2.grid(True)
+
+        # plot figures
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharey = False, sharex = True)
 
             # angle
+    ax1.plot(angVel_time_prog, phi_prog, label = 'Phi')
+    ax1.plot(angVel_time_prog, theta_prog, label = 'Theta')
+    ax1.plot(angVel_time_prog, psi_prog, label = 'Psi')
+    ax1.legend(loc = 'upper right')
+    ax1.set_xlabel("Time [s]")
+    ax1.set_ylabel("Angle [deg]")
+    ax1.grid(True)
+
+            # quaternions
+    ax2.plot(quat_time_prog, e1_prog, label = 'q1')
+    ax2.plot(quat_time_prog, e2_prog, label = "q2")
+    ax2.plot(quat_time_prog, e3_prog, label = "q3")
+    ax2.plot(quat_time_prog, n_prog, label = 'n')
+    ax2.set_xlabel("Time [s]")
+    ax2.set_ylabel("Quaternion Parameter")
+    ax2.legend(loc = 'upper right')
+    ax2.grid(True)
+
+            # angular velocity
     ax3.set_xlabel("Time [s]")
-    ax3.set_ylabel("Angle [deg]")
+    ax3.set_ylabel("Angular Velocity [rad/s]")
     ax3.grid(True)
 
     plt.show()
