@@ -3,6 +3,7 @@ from numpy.linalg import solve
 from scipy.integrate import solve_ivp
 from matplotlib import pyplot as plt
 
+# GENERAL
 # class creation for arbitrary central body
 class CentralBody:
     def __init__(self, name, radius, Mu = None, mass = None):
@@ -209,6 +210,7 @@ def RV2coes(R, V, centralBody = CentralBody("Earth", 6378, Mu = 398600)):
     # return [angularMomentum [km3s-2], eccentricity, inclination [deg], raan [deg], argumentOfPerigee [deg], trueAnomaly [deg], semiMajorAxis [km]]
     return np.array([h, ecc, inc, raan, arg, ta, a])
 
+# 3x3 representation of cross of vector
 def vectorCross(vector):
     rowA = np.array([0, -vector[2], vector[1]])
     rowB = np.array([vector[2], 0, -vector[0]])
@@ -216,6 +218,7 @@ def vectorCross(vector):
 
     return np.array([rowA, rowB, rowC]).reshape(3,3)
 
+# rotation matrix about x-axis for phi rad
 def rotX(phi):
     cos = np.cos
     sin = np.sin
@@ -226,6 +229,7 @@ def rotX(phi):
 
     return np.array([rowA, rowB, rowC]).reshape(3,3)
 
+# rotation matrix about y-axis for theta rad
 def rotY(theta):
     cos = np.cos
     sin = np.sin
@@ -236,6 +240,7 @@ def rotY(theta):
 
     return np.array([rowA, rowB, rowC]).reshape(3,3)
 
+# rotation matrix about z-axis for psi rad
 def rotZ(psi):
 
     cos = np.cos
@@ -247,6 +252,7 @@ def rotZ(psi):
 
     return np.array([rowA, rowB, rowC]).reshape(3,3)
 
+# rotation matrix between (non-standard) LVLH frame and ECI frame
 def lvlh2eci(R, V):
     rad = np.linalg.norm(R)
     zz = -R/rad
@@ -262,6 +268,7 @@ def lvlh2eci(R, V):
                         xx[1], yy[1], zz[1],
                         xx[2], yy[2], zz[2]]).reshape(3,3))
 
+# quaternion between two radius vectors
 def rads2quat(r1, r2):
     Vc = np.cross(r1, r2)
     Vnc = Vc/np.linalg.norm(Vc)
@@ -271,6 +278,7 @@ def rads2quat(r1, r2):
 
     return quaternion(np.array([Vnc[0], Vnc[1], Vnc[2]]), -s)
 
+# rotation matrix form of quaternion
 def quat2matr(quat):
     q1 = quat.E[0]
     q2 = quat.E[1]
@@ -286,6 +294,7 @@ def quat2matr(quat):
 
     return matrA + matrB - matrC
 
+# quaternion form of rotation matrix
 def matr2quat(matr):
     n = (np.sqrt(np.trace(matr) + 1))/2
 
@@ -295,6 +304,8 @@ def matr2quat(matr):
 
     return quaternion(np.array([e1, e2, e3]), n)
 
+# PART 2
+# ODE to solve for progression of quaternion over a single period
 def quatProgressionSol(quaternion, angularVelocity, inertiaVector, period):
     def quatProgression(t, state):
         ix = inertiaVector[0]
@@ -337,6 +348,7 @@ def quatProgressionSol(quaternion, angularVelocity, inertiaVector, period):
 
     return solve_ivp(quatProgression, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
+# ODE to solve for progression of Euler Angles over a single period
 def eulerAngleSol(initialEuler, angularVelocity, inertiaVector, period):
     def eulerAngle(t, state):
         ix = inertiaVector[0]
@@ -383,6 +395,7 @@ def eulerAngleSol(initialEuler, angularVelocity, inertiaVector, period):
 
     return solve_ivp(eulerAngle, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
+# ODE to solve for progression of angular velocity components over single period
 def angVelProgressionSol(initialVelocity, inertiaVector, period):
     def angVelProgression(t, state):
         ix = inertiaVector[0]
@@ -409,6 +422,7 @@ def angVelProgressionSol(initialVelocity, inertiaVector, period):
 
     return solve_ivp(angVelProgression, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
+# ODE to solve for quaternion, euler angles, AND angular velocity components over single period
 def torqueFreeSol(initial_quaternion, initial_euler_angles, initial_angular_velocity, inertiaVector, period):
     def torqueFree(t, state):
         ix = inertiaVector[0]
@@ -478,6 +492,7 @@ def torqueFreeSol(initial_quaternion, initial_euler_angles, initial_angular_velo
 
     return solve_ivp(torqueFree, (0, np.ceil(period)), state, method = 'RK23', t_eval = np.linspace(0, np.ceil(period), 1001))
 
+# PART 3
 if __name__ == '__main__':
     R = np.array([7136.6, 0, 0])
     V = np.array([0, -1.0956, 7.3927])
