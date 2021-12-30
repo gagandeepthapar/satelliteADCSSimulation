@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from _helperFuncs import *
+from scipy.integrate import solve_ivp
 
 # PART SPECIFIC FUNCTIONS
 # ODE to solve for progression of quaternion over a single period
